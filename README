@@ -1,0 +1,26 @@
+[In Progress..]
+
+Solutions to exercises of The Wizard Book: Structure and Interpretation of Computer 
+Programs (SICP), by Herold Abelson and Gerald Sussman, 2nd Edition, MIT Press.
+
+The book is available online at http://mitpress.mit.edu/sicp/full-text/book/book.html.
+
+All programs are written using MIT/GNU Scheme 9.1.1.
+
+SICP is a classic, must-read book for every passionate programmer. Some interesting 
+reads about SICP:
+
+  Peter Norvig, Director of Research at Google, reasons out the split between those
+  who love and those who hate SICP - http://www.amazon.com/review/R403HR4VL71K8.
+
+  Joel Spolsky explains the importance of understanding SICP and the repercussions
+  of JavaSchools on the quality of programmers - 
+  http://www.joelonsoftware.com/articles/ThePerilsofJavaSchools.html.
+
+
+This project is a part of my Functional Programming journey. I had just finished
+"The Little Schemer" (and had placed an order for "The Seasoned Schemer" :) ) when
+I started SICP. The Little Schemer takes you quickly from the basics of Scheme 
+to deriving the applicative-order Y Combinator and writing a simple meta-circular 
+interpreter in just 10 chapters. Scheme code snippets from The Little Schemer can
+be found at https://github.com/viswanathgs/The-Little-Schemer.
