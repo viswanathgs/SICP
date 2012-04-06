@@ -11,6 +11,8 @@
 ; Exercise 2.4.
 ;
 ; Alternative procedural representation of pairs.
+; The values x and y are stored in the procedure definition, 
+; and not in any data structure. This is a closure.
 ;
 (define (cons x y)
   (lambda (m) (m x y)))
