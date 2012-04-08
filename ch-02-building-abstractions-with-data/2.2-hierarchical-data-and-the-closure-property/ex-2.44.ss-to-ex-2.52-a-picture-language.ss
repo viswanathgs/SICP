@@ -203,3 +203,75 @@
   (cadr frame))
 (define (edge2-frame frame)
   (cddr frame))
+
+; Painters
+;   A painter is a procedure that takes a frame as an argument
+;   and draws a particular image shifted and scaled to fit the 
+;   frame.
+;
+; Define segments->painter
+;   This procedure takes a list of line segments as an argument, 
+;   transforms the segment endpoints with the frame coordinate map
+;   and draws a line between the transformed points for each segment.
+;
+(define (segments->painter segment-list)
+  (lambda (frame)
+    (for-each
+      (lambda (segment)
+        (draw-line
+          ((frame-coord-map frame) (start-segment segment))
+          ((frame-coord-map frame) (end-segment segment)))) 
+      segment-list)))
+
+; Exercise 2.48.
+;
+; Implementation of a directed line segment as a pair of vectors - the
+; vector from the origin to the start-point of the segment, and the vector
+; from the origin to the end-point.
+;
+(define (make-segment vect1 vect2)
+  (cons vect1 vect2))
+(define (start-segment segment)
+  (car segment))
+(define (end-segment segment)
+  (cdr segment))
+
+; Exercise 2.49.
+;
+; Define outline-painter
+;   Painter that draws the outline of a frame.
+;
+(define outline-segments
+  (list 
+    (make-segment (make-vect 0 0) (make-vect 0 1))
+    (make-segment (make-vect 0 0) (make-vect 1 0))
+    (make-segment (make-vect 0 1) (make-vect 1 1))
+    (make-segment (make-vect 1 0) (make-vect 1 1))))
+(define (outline-painter frame)
+  ((segments->painter outline-segments) frame))
+;
+; Define diagonal-painter
+;   Painter that draws the diagonals of a frame.
+;
+(define diagonal-segments
+  (list
+    (make-segment (make-vect 0 0) (make-vect 1 1))
+    (make-segment (make-vect 0 1) (make-vect 1 0))))
+(define (diagonal-painter frame)
+  ((segments->painter diagonal-segments) frame))
+;
+; Define diamond-painter
+;   Painter that draws a diamond by connecting the midpoints
+;   of the sides of a frame.
+;
+(define diamond-segments
+  (list
+    (make-segment (make-vect 0.5 0) (make-vect 1 0.5))
+    (make-segment (make-vect 1 0.5) (make-vect 0.5 1))
+    (make-segment (make-vect 0.5 1) (make-vect 0 0.5))
+    (make-segment (make-vect 0 0.5) (make-vect 0.5 0))))
+(define (diamond-painter frame)
+  ((segments->painter diamond-segments) frame))
+;
+; wave painter is similar to the above, only with a different segment-list.
+; 
