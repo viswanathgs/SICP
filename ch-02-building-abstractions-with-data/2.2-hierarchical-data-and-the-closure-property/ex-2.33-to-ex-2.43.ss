@@ -155,3 +155,152 @@
 ;
 (define (my-reverse sequence)
   (fold-left (lambda (x y) (cons y x)) '() sequence))
+
+; Nested Mappings.
+
+; Exercise 2.40.
+;
+; Define unique-pairs
+;   Given an integer n, generates the sequence of pairs (i, j)
+;   with 1 <= j < i <= n.
+;
+(define (enumerate-interval low high)
+  (if (> low high)
+      '()
+      (cons low (enumerate-interval (1+ low) high))))
+;
+(define (flat-map proc seq)
+  (accumulate append '() (map proc seq)))
+;
+(define (unique-pairs n)
+  (flat-map (lambda (i)
+              (map (lambda (j) (list i j))
+                   (enumerate-interval 1 (- i 1))))
+            (enumerate-interval 1 n)))
+;
+(unique-pairs 4) ; ((2 1) (3 1) (3 2) (4 1) (4 2) (4 3))
+;
+; Define prime-sum-pairs
+;   Given n, generates all ordered pairs of distict positive integers
+;   i and j, where 1 <= j < i <= n, such that i + j is prime.
+;
+(define (prime-sum-pairs n)
+  (map (lambda (p) (list (car p) (cadr p) (+ (car p) (cadr p))))
+       (filter is-sum-prime? (unique-pairs n))))
+;
+(define (is-sum-prime? ordered-pair)
+  (prime? (+ (car ordered-pair) (cadr ordered-pair))))
+;
+(define (prime? n)
+  (define (iter i)
+    (cond 
+      ((> (* i i) n) #t)
+      ((= (remainder n i) 0) #f)
+      (else (iter (+ i 1)))))
+  (iter 2))
+;
+(prime-sum-pairs 6) ; ((2 1 3) (3 2 5) (4 1 5) (4 3 7) (5 2 7) (6 1 7) (6 5 11))
+
+; Exercise 2.41.
+;
+; Define triple-sum
+;   Generates all the ordered triples (i, j, k) such that 1 <= k < j < i <= n
+;   and i + j + k = s.
+;
+(define (unique-triples n)
+  (flat-map (lambda (i) 
+              (map (lambda (p) (cons i p)) (unique-pairs (- i 1))))
+            (enumerate-interval 1 n)))
+;
+(unique-triples 4) ; ((3 2 1) (4 2 1) (4 3 1) (4 3 2))
+;
+(define (triple-sum n s)
+  (filter (eq-sum? s) (unique-triples n)))
+;
+; eq-sum? returns a procedure that takes a triple and checks if the sum
+; of its elements is equal to s. eq-sum? curries s into the returned procedure.
+; 
+(define (eq-sum? s)
+  (lambda (t) 
+    (= s (+ (car t) (cadr t) (caddr t)))))
+
+; Exercise 2.42.
+;
+; N-queens puzzle
+; 
+; Define queens
+;   Returns a list of all possible valid placements for the given board size.
+;
+; Define queen-cols
+;   Returns a list of all possible valid placements for the first k columns
+;   of the given board size.
+;
+; Each placement is represented as a list of length board-size. If the ith
+; element of the list is x, then a queen is placed at ith column at xth row.
+;
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+          (lambda (positions) (safe? k positions))
+          (flat-map
+            (lambda (rest-of-queens)
+              (map (lambda (new-row) (adjoin-position new-row k rest-of-queens))
+                   (enumerate-interval 1 board-size)))
+            (queen-cols (- k 1))))))
+  (queen-cols board-size))
+;
+(define empty-board '())
+;
+; adjoin-position just appends new-row to rest-of-queens.
+; rest-of-queens has the placement for the first k-1 columns.
+;
+(define (adjoin-position new-row k rest-of-queens)
+  (append rest-of-queens (list new-row)))
+;
+; safe? checks if the kth position is safe with respect to the 
+; first k-1 positions.
+;
+(define (safe? k positions)
+  (define (iter col seq new-row)
+    (let ((row (car seq)))
+      (cond
+        ((= col k) #t)
+        ((= row new-row) #f)
+        ((= (abs (- row new-row)) (abs (- col k))) #f)
+        (else (iter (1+ col) (cdr seq) new-row)))))
+  (iter 1 positions (get-nth k positions)))
+;
+; get-nth returns the nth element (1-based) in seq.
+;
+(define (get-nth n seq)
+  (if (= n 1)
+      (car seq)
+      (get-nth (- n 1) (cdr seq))))
+;
+(queens 4) ; ((2 4 1 3) (3 1 4 2))
+
+; Exercise 2.43.
+; 
+; The following queens implementation has interchanged order of the 
+; nested mappings iin the flat-map.
+;
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+          (lambda (positions) (safe? k positions))
+          (flat-map
+            (lambda (new-row)
+              (map (lambda (rest-of-queens) (adjoin-position new-row k rest-of-queens))
+                   (queen-cols (- k 1))))
+            (enumerate-interval 1 board-size)))))
+  (queen-cols board-size))
+;
+; Due to the interchange in nested mappings, for every possible value of 
+; new-row (from 1 to board-size), (queen-cols (- k 1)) is called. This leads
+; to an increase in time by a factor of board-size for each k. Hence, for all 
+; values of k, the time is increased by a factor of (board-size ^ board-size).
+;
