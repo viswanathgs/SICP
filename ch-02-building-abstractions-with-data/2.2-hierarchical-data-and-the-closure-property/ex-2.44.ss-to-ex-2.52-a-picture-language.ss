@@ -107,9 +107,9 @@
 ;
 ; Define square-limit in terms of square-of-four
 ;
-(define (square-limit painter)
+(define (square-limit painter n)
   ((square-of-four flip-horiz identity
-                   rotate180 flip-vert) painter))
+                   rotate180 flip-vert) (corner-split painter n)))
 
 ; Exercise 2.45.
 ;
@@ -397,4 +397,27 @@
 ;
 (define (below painter1 painter2)
   (rotate90 (beside (rotate270 painter1) (rotate270 painter2))))
-          
+
+; Exercise 2.52.
+;
+; More segments can be added to the primitive wave using make-segment.
+;
+; Define corner-split-single
+;   Uses only one copy of the up-split and right-split images instead
+;   of two.
+;
+(define (corner-split painter n)
+  (if (= n 0)
+      painter
+      (let ((up (up-split painter (- n 1)))
+            (right (right-split painter (- n 1)))
+            (corner (corner-split painter (- n 1))))
+        (below (beside painter right)
+               (beside up corner)))))
+;
+; Define square-limit-outward
+;   Corners are assembled facing outwards.
+;
+(define (square-limit-outward painter n)
+  ((square-of-four flip-vert rotate180
+                   identity flip-horiz) (corner-split painter n)))
