@@ -275,3 +275,126 @@
 ;
 ; wave painter is similar to the above, only with a different segment-list.
 ; 
+
+; Transforming and combining painters
+;
+; A transformation (like flip-vert or beside) is done by calling the original painter with
+; an appropriately transformed frame.
+;
+; Define transform-painter
+;   The argument origin specifies the new frame's origin and corner1 and corner2 specify the
+;   ends of its edge vectors. This procedure returns a painter that takes a frame as an argument,
+;   transforms the frame, and paints on it.
+;
+(define (transform-painter painter origin corner1 corner2)
+  (lambda (frame)
+    (let ((m (frame-coord-map frame)))
+      (let ((new-origin (m origin)))
+        (painter
+          (make-frame new-origin
+                      (sub-vect (m corner1) new-origin)
+                      (sub-vect (m corner2) new-origin)))))))
+;
+; Define flip-vert
+;
+(define (flip-vert painter)
+  (transform-painter painter 
+                     (make-vect 0.0 1.0)
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 0.0)))
+;
+; Define shrink-to-upper-right
+;   A painter that shrinks its image to the upper-right quarter
+;   of the frame.
+;
+(define (shrink-to-upper-right painter)
+  (transform-painter painter
+                     (make-vect 0.5 0.5)
+                     (make-vect 1.0 0.5)
+                     (make-vect 0.5 1.0)))
+;
+; Define rotate90
+;
+(define (rotate90 painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 1.0 1.0)
+                     (make-vect 0.0 0.0)))
+;
+; Define squash-inwards
+;   A painter that squashes the image towards the center of the frame.
+;
+(define (squash-inwards painter)
+  (transform-painter painter
+                     (make-vect 0.0 0.0)
+                     (make-vect 0.65 0.35)
+                     (make-vect 0.35 0.65)))
+;
+; Define beside
+;
+(define (beside painter1 painter2)
+  (let ((split-point (make-vect 0.5 0.0)))
+    (let ((paint-left
+            (transform-painter painter1
+                               (make-vect 0.0 0.0)
+                               split-point
+                               (make-vect 0.0 1.0)))
+          (paint-right
+            (transform-painter painter2
+                               split-point
+                               (make-vect 1.0 0.0)
+                               (make-vect 0.5 1.0))))
+      (lambda (frame)
+        (paint-left frame)
+        (paint-right frame)))))
+
+; Exercise 2.50.
+;
+; Define flip-horiz
+;
+(define (flip-horiz painter)
+  (transform-painter painter
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+;
+; Define rotate180
+;
+(define (rotate180 painter)
+  (transform-painter painter
+                     (make-vect 1.0 1.0)
+                     (make-vect 1.0 0.0)
+                     (make-vect 0.0 1.0)))
+;
+; Define rotate270
+;
+(define (rotate270 painter)
+  (transform-painter painter
+                     (make-vect 0.0 1.0)
+                     (make-vect 0.0 0.0)
+                     (make-vect 1.0 1.0)))
+
+; Exercise 2.51.
+;
+; Define below
+;
+(define (below painter1 painter2)
+  (let ((paint-bottom
+          (transform-painter painter1
+                             (make-vect 0.0 0.0)
+                             (make-vect 1.0 0.0)
+                             (make-vect 0.0 0.5)))
+        (paint-top
+          (transform-painter painter2
+                             (make-vect 0.0 0.5)
+                             (make-vect 1.0 0.5)
+                             (make-vect 0.0 1.0))))
+    (lambda (frame)
+      (paint-bottom frame)
+      (paint-top frame))))
+; 
+; Define below (in terms of beside and rotate)
+;
+(define (below painter1 painter2)
+  (rotate90 (beside (rotate270 painter1) (rotate270 painter2))))
+          
