@@ -8,8 +8,7 @@ Programs (SICP), by Herold Abelson and Gerald Sussman, 2nd Edition, MIT Press.
 Note:
 
   1. Section 2.2.4 (the picture language exercise; ex-2.44-to-ex-2.52-a-picture-language.rkt)
-     is written in _Racket_ (formerly PLT Scheme). It requires sicp.plt package from
-     http://planet.racket-lang.org/ for the primitive operations of the picture language.
+     is written in _Racket_ (formerly PLT Scheme). It requires [sicp.plt](http://planet.racket-lang.org/display.ss?package=sicp.plt&owner=soegaard) package from PLaneT for the primitive operations of the picture language.
      Run the programs in DrRacket for the images to display correctly.
 
   2. All other programs are written using _MIT/GNU Scheme 9.1.1._
