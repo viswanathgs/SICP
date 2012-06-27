@@ -1,14 +1,17 @@
-[In Progress..]
+[In Progress...]
 
 Solutions to exercises of The Wizard Book: Structure and Interpretation of Computer 
 Programs (SICP), by Herold Abelson and Gerald Sussman, 2nd Edition, MIT Press.
 
-The book is available online at http://mitpress.mit.edu/sicp/full-text/book/book.html.
+Note:
 
-SICP video lectures by Abelson and Sussman themselves (given to HP employees in 1986)
-can be found at http://groups.csail.mit.edu/mac/classes/6.001/abelson-sussman-lectures/.
+  1. Section 2.2.4 (the picture language exercise; ex-2.44-to-ex-2.52-a-picture-language.rkt)
+     is written in Racket (formerly PLT Scheme). It requires sicp.plt package from
+     http://planet.racket-lang.org/ for the primitive operations of the picture language.
+     Run the programs in DrRacket for the images to display correctly.
 
-All programs are written using MIT/GNU Scheme 9.1.1.
+  2. All other programs are written using MIT/GNU Scheme 9.1.1.
+
 
 SICP is a classic, must-read book for every passionate programmer. Some interesting 
 reads about SICP:
@@ -19,6 +22,11 @@ reads about SICP:
   Joel Spolsky explains the importance of understanding SICP and the repercussions
   of JavaSchools on the quality of programmers - 
   http://www.joelonsoftware.com/articles/ThePerilsofJavaSchools.html.
+
+The book is available online at http://mitpress.mit.edu/sicp/full-text/book/book.html.
+
+SICP video lectures by Abelson and Sussman themselves (given to HP employees in 1986)
+can be found at http://groups.csail.mit.edu/mac/classes/6.001/abelson-sussman-lectures/.
 
 
 This project is a part of my Functional Programming journey. I had just finished
