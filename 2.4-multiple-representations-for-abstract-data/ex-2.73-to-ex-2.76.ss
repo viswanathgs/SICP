@@ -229,13 +229,13 @@
 ;
 
 ; Procedures for manipulating the operation-and-type table
-;   (Assume put and get are implemented for now. They are described in chapter 3)
+; (This is explained in chapter 3. Assume they are implemented for now.)
 ;
 ; (put <op> <type> <item>) installs the <item> in the table, indexed by <op> and <type>
 ; (get <op> <type>) looks up the <op>, <type> entry in the table and returns the item found there. Returns #f if no item is found.
 ;
 
-; Procedures belonging to each representation is encapsulated within a package. These procedures interface
+; Procedures belonging to each representation are encapsulated within a package. These procedures interface
 ; with the rest of teh system by adding entries to the table.
 ;
 ; Package for rectangular form
@@ -329,3 +329,75 @@
   ((get 'make-from-real-imag 'rectangular) x y))
 (define (make-from-mag-ang r a)
   ((get 'make-from-mag-ang 'polar) r a))
+
+; Exercise 2.73.
+;   Symbolic differentiation using data-directed programming.
+;
+; Define deriv
+;
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        (else ((get 'deriv (operator exp)) (operands exp) var))))
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+;
+; a. If exp is a number or a variable, what deriv does is obvious. If exp is any other
+;    expression, then the corresponding procedure from the table indexed by 'deriv
+;    and the operator of the expression is obtained. This procedure is called over
+;    a list of operands and a variable to perform the differentiation.
+; 
+;    number? and variable? are not assimilated into the data-directed dispatch
+;    as they do not have any data (i.e., operator) on which to dispatch them.
+;
+; b. Procedures deriv-sum and deriv-product to be installed into the table, along
+;    with the corresponding auxiliary code for interfacing.
+;
+(define (install-deriv-package)
+  ;; internal procedures
+  (define (make-sum a1 a2) (list '+ a1 a2))
+  (define (addend s) (car s))
+  (define (augend s) (cadr s))
+  (define (make-product m1 m2) (list '* m1 m2))
+  (define (multiplier m) (car m))
+  (define (multiplicand m) (cadr m))
+  (define (deriv-sum operands var)
+    (make-sum (deriv (addend operands) var)
+              (deriv (augend operands) var)))
+  (define (deriv-product operands var)
+    (make-sum (make-product (deriv (multiplier operands) var)
+                            (multiplicand operands))
+              (make-product (multiplier operands)
+                            (deriv (multiplicand operands) var))))
+  ;; interface to the rest of the system
+  (put 'deriv '+ deriv-sum)
+  (put 'deriv '* deriv-product)
+'done)
+;
+; Note:
+;   make-sum adds '+ to the beginning of the list. But the selectors addend and augend operate
+;   on lists without the symbol '+. This is because the procedure deriv calls deriv-sum
+;   on just the list of operands (removing the '+ part). This applies for product also.
+;   Note the similarity to the data-directed representation of complex numbers, wherein, the
+;   constructor within the package added the type tag, but the selectors (real-part, imag-part, etc.)
+;   worked on complex numbers without the type tag.
+;
+; c. Install exponentiation package
+;
+;    This requires adding the following procedures into the install-deriv-package definition.
+;    (Note that this does not require any change in any other part of the system).
+;
+;; internal procedures
+(define (make-exponentiation base expo) (list '** base expo))
+(define (base e) (car e))
+(define (exponent e) (cadr e))
+(define (deriv-exponentiation operands var)
+  (make-product (make-product (exponent operands)
+                              (make-exponentiation (base operands)
+                                                   (make-sum (exponent operands) (- 1))))
+                (deriv (base operands) var)))
+;; interface to the rest of the system
+(put 'deriv '** deriv-exponentiation)
+;
+; d. This requires all put operations to be of the form
+;    (put <op> 'deriv <proc>)
