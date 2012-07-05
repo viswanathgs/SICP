@@ -401,3 +401,120 @@
 ;
 ; d. This requires all put operations to be of the form
 ;    (put <op> 'deriv <proc>)
+;
+
+; Exercise 2.74.
+;
+; a. Define get-record
+;
+(define (get-record personnel-file employee-name)
+  ((get 'get-record (division personnel-file)) (contents personnel-file)
+                                               employee-name))
+;
+; Each division's file should contain a division identifier. This should uniquely
+; identify the division to which the file belongs. Selectors division and contents
+; should return the division identifier and the contents of the file respectively.
+; The procedure from the table that is indexed by 'get-record and the division
+; identifier is obtained and the contents of the file and the employee name whose
+; record is to be obtained are passed to it.
+;
+; b. Define get-salary
+;
+(define (get-salary personnel-file employee-name)
+  (let ((record (get-record personnel-file employee-name)))
+    ((get 'get-salary (division record)) (contents record)
+                                         employee-name)))
+;
+; Each record should contain a division identifier that uniquely identifies the
+; division to which the employee record belongs to. The procedure indexed by
+; 'get-salary and the division identifier is obtained from the table and
+; the contents of the record and the employee name are passed to it to obtain
+; the salary.
+;
+; c. Define find-employee-record
+;
+(define (find-employee-record employee-name division-files)
+  (if (null? division-files)
+      #f
+      (let ((record (get-record (car division-files) employee-name)))
+        (if (record)
+            record
+            (find-employee-record employee-name (cdr division-files))))))
+;
+; d. The personnel file of the new company should have a unique identifier for the
+;    company (or division). The corresponding selectors (get-record, get-salary)
+;    should be added to the central table. These selectors should operate on the
+;    format of the new company's personnal file and the format of the records in it.
+;
+;    (put 'get-record <new-division-id> <get-record-proc-for-new-division>)
+;    (put 'get-salary <new-division-id> <get-salary-proc-for-new-division>)
+;
+;    The constructors (for records and files) should add division id to the records
+;    and files. Selectors division and contents should return the division id and
+;    the contents of the records and files.
+;
+
+; Message passing
+;
+; In data-directed programming, we have intelligent operations that dispatch on
+; data types (we work on rows of the table since each rows represent operations
+; and columns represent data types). In message passing, we have intelligent data
+; objects that dispatch on operation names (we work on columns).
+;
+; Define make-from-real-imag
+;   This returns a procedure which takes the name of the operation and performs
+;   the operation indicated.
+;
+(define (make-from-real-imag x y)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) x)
+          ((eq? op 'imag-part) y)
+          ((eq? op 'magnitude) (sqrt (+ (square x) (square y))))
+          ((eq? op 'angle) (atan y x))
+          (else (error "Unknown op -- MAKE-FROM-REAL-IMAG" op))))
+  dispatch)
+;
+; Define apply-generic
+;   This simply passes the operation's name to the data object and lets
+;   the data object do the work.
+;
+(define (apply-generic op arg) (arg op))
+;
+; Note that this cannot be used for generic procedures of more than one argument.
+
+; Exercise 2.75.
+;
+; Define make-from-mag-ang
+;
+(define (make-from-mag-ang r a)
+  (lambda (op)
+    (cond ((eq? 'real-part) (* r (cos a)))
+          ((eq? 'imag-part) (* r (sin a)))
+          ((eq? 'magnitude) r)
+          ((eq? 'angle) a)
+          (else (error "Unknown op -- MAKE-FROM-MAG-ANG" op)))))
+
+; Exercise 2.76.
+;
+; a. Generic operations with explicit dispatch
+;      New operations - Requires defining new procedures that explicitly dispatch
+;                       a different procedure for each type.
+;      New types - Requires adding a new clause in all the existing generic procedures.
+;
+; b. Data-directed style
+;      New operations - For each type already present, a new procedure that performs
+;                       the new operation for data belonging to that type should
+;                       be defined and added to the table using put.
+;                       (Adding a new row to the table).
+;      New types - Operations should be defined for the new type and should be
+;                  added to the table using put. (Adding a new column to the table).
+;
+; c. Message passing style
+;      New operations - Each data object already defined should be modified to include
+;                       a clause that dispatches on the new operation.
+;      New types - Requires adding a new data object that returns a procedure and takes
+;                  into account all the existing operations.
+;
+; For a system in which new operations are added often, data-directed style is more appropriate.
+; For a system that adds new types often, message passing style is more appropriate.
+;
